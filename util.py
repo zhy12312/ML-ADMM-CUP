@@ -11,7 +11,7 @@ import numpy as np
 import torch.nn.functional as F
 
 def A(x, Phi):
-    return np.sum(x*Phi, axis=2)  # element-wise product
+    return np.sum(x*Phi, axis=2) 
 
 def At(y, Phi):
     return (Phi.transpose()*y.transpose()).transpose()

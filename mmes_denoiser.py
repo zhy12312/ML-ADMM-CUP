@@ -29,15 +29,15 @@ def mmes_denoiser(loss_y_min,follow,follow1, x, img, truth, tau, r, sig, var, Ph
     x = torch.from_numpy(x).cuda().float()
     model = mmes(x, tau*tau, ranks, N3).cuda()
     if follow1:
-        model.load_state_dict(torch.load('model_params1.pth'))
-    lam=50
+        model.load_state_dict(torch.load('model1.pth'))
+    lam=5
     optimizer = optim.Adam(model.parameters(), lr = 0.0125, betas=(0.9, 0.999))
     loss_fn = nn.MSELoss().cuda()
     cost_hist = np.zeros([iter_num])
-    noise = torch.normal(0, sig, [N3*(N2+tau-1)*(N1+tau-1), tau*tau]).cuda().float()
     i=0
     j=0
     while i<iter_num:
+        noise = torch.normal(0, sig, [N3*(N2+tau-1)*(N1+tau-1), tau*tau]).cuda().float()
         Hx, AHx, out= model(noise, tau, shape)
         optimizer.zero_grad()
         outshift = shift_torch(out, shift_step)
@@ -68,13 +68,12 @@ def mmes_denoiser(loss_y_min,follow,follow1, x, img, truth, tau, r, sig, var, Ph
         if (i+1)%25==0 and y_loss < loss_min*1.1:
             loss_min = y_loss
             output = out.detach().cpu().numpy()
-            torch.save(model.state_dict(), 'model_params.pth')
+            torch.save(model.state_dict(), 'model.pth')
         if (i+1)%100==0:
             PSNR = psnr_torch(truth, torch.squeeze(out))
-            print('DIP iter {}, x_loss:{:.5f}, y_loss:{:.5f},ae_loss:{:.5f},lam:{:.5f},PSNR:{:.2f}'.format(i+1+j*200, x_loss.detach().cpu().numpy(), y_loss.detach().cpu().numpy(),ae_loss.detach().cpu().numpy(),lam, PSNR.detach().cpu().numpy()))
-    
+            print('ML iter {}, x_loss:{:.5f}, y_loss:{:.5f},ae_loss:{:.5f},lam:{:.5f},PSNR:{:.2f}'.format(i+1+j*200, x_loss.detach().cpu().numpy(), y_loss.detach().cpu().numpy(),ae_loss.detach().cpu().numpy(),lam, PSNR.detach().cpu().numpy()))
         if i==iter_num-1 and loss_min.detach().cpu().numpy() > loss_y_min:
-            i=i-200
+            i=i-500
             j += 1
         i += 1
     return output, loss_min.detach().cpu().numpy()
