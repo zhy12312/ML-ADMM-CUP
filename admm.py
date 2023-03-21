@@ -20,11 +20,9 @@ def admm_mmes(y, tau, r, sig, var, Phi, Phi_sum, mu = 0.01, rho = 0.001, denoise
                  shift_step=2, mmes_iter=[], index = None, X_ori=None, save_path = None):
     Phi_tensor = torch.from_numpy(np.transpose(Phi, (2, 0, 1))).cuda().float()
     y_tensor = torch.from_numpy(y).cuda().float() 
-    truth = torch.from_numpy(np.transpose(X_ori, (2, 0, 1))).cuda().float() 
-    u = At(y, Phi) 
-    Z = u   # default start point (initialized value)
-    x = u
-    v = np.zeros_like(u)
+    truth = torch.from_numpy(np.transpose(X_ori, (2, 0, 1))).cuda().float()  
+    Z = At(y, Phi)   
+    I = At(y, Phi)
     b = np.zeros_like(Z)
     begin_time = time.time()
     loss_y_min = 1
@@ -33,17 +31,17 @@ def admm_mmes(y, tau, r, sig, var, Phi, Phi_sum, mu = 0.01, rho = 0.001, denoise
     for it in range(iter_num):
         c = Z + b
         yb = A(c, Phi)
-        x = c + At(np.divide(y-yb, Phi_sum+mu ),Phi)
+        I = c + At(np.divide(y-yb, Phi_sum+mu ),Phi)
         input0 = np.random.uniform(0,1,X_ori.shape)*var        
-        temp_T = shift_back(x-b, shift_step)
+        temp_Z = shift_back(I-b, shift_step)
         follow=0
         if it==0:
             follow=1
-        out, loss_y_iter = mmes_denoiser(loss_y_min,follow,follow1, input0, temp_T, truth, tau, r, sig, var, Phi_tensor, y_tensor, mmes_iter[it], mu, rho, shift_step=shift_step)   
+        out, loss_y_iter = mmes_denoiser(loss_y_min,follow,follow1, input0, temp_Z, truth, tau, r, sig, var, Phi_tensor, y_tensor, mmes_iter[it], mu, rho, shift_step=shift_step)   
         Z = np.transpose(np.squeeze(out), (1, 2, 0))
         x_rec = Z
         Z = shift(Z, shift_step)
-        b = b-(x-Z)
+        b = b-(I-Z)
         mu = 0.998 * mu
         psnr_x = psnr_block(X_ori, x_rec)
         end_time = time.time()
