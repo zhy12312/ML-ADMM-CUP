@@ -50,7 +50,7 @@ def admm_mmes(y, tau, r, sig, var, Phi, Phi_sum, mu = 0.01, rho = 0.001, denoise
             sio.savemat(save_path + 'scene0{}_{}_{:.2f}.mat'.format(index, it+1, psnr_x),{'x_rec': x_rec})
         if loss_y_iter < loss_y_min:
             loss_y_min = loss_y_iter
-            shutil.move('./model_params.pth','./model_params1.pth')
+            shutil.move('./model.pth','./model1.pth')
             follow1=1
         if it == iter_num-1 or it == iter_num-2:
             sio.savemat(save_path + 'scene0{}_{}_{:.2f}.mat'.format(index, it+1, psnr_x),{'x_rec': x_rec})
