@@ -45,7 +45,7 @@ def admm_mmes(y, tau, r, sig, var, Phi, Phi_sum, mu = 0.01, rho = 0.001, denoise
         mu = 0.998 * mu
         psnr_x = psnr_block(X_ori, x_rec)
         end_time = time.time()
-        print('PnP-{}, Iteration {}, loss = {:.5f}, PSNR = {:.2f}dB, time = {}'.format(denoiser ,it+1, loss_y_iter, psnr_x, (end_time-begin_time)))
+        print('ADMM-{}, Iteration {}, loss = {:.5f}, PSNR = {:.2f}dB, time = {}'.format(denoiser ,it+1, loss_y_iter, psnr_x, (end_time-begin_time)))
         if loss_y_iter < loss_y_min and it > iter_num/2+3:
             sio.savemat(save_path + 'scene0{}_{}_{:.2f}.mat'.format(index, it+1, psnr_x),{'x_rec': x_rec})
         if loss_y_iter < loss_y_min:
