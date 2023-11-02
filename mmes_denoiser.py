@@ -71,7 +71,7 @@ def mmes_denoiser(loss_y_min,follow,follow1, x, img, truth, tau, r, sig, var, Ph
             torch.save(model.state_dict(), 'model.pth')
         if (i+1)%100==0:
             PSNR = psnr_torch(truth, torch.squeeze(out))
-            print('ML iter {}, x_loss:{:.5f}, y_loss:{:.5f},ae_loss:{:.5f},lam:{:.5f},PSNR:{:.2f}'.format(i+1+j*200, x_loss.detach().cpu().numpy(), y_loss.detach().cpu().numpy(),ae_loss.detach().cpu().numpy(),lam, PSNR.detach().cpu().numpy()))
+            print('ML iter {}, x_loss:{:.5f}, y_loss:{:.5f},ae_loss:{:.5f},lam:{:.5f},PSNR:{:.2f}'.format(i+1+j*500, x_loss.detach().cpu().numpy(), y_loss.detach().cpu().numpy(),ae_loss.detach().cpu().numpy(),lam, PSNR.detach().cpu().numpy()))
         if i==iter_num-1 and loss_min.detach().cpu().numpy() > loss_y_min:
             i=i-500
             j += 1
