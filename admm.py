@@ -28,7 +28,9 @@ def admm_mmes(y, tau, r, sig, var, Phi, Phi_sum, mu = 0.01, rho = 0.001, denoise
     loss_y_min = 1
     [N1,N2,N3] = X_ori.shape
     follow1=0
-    for it in range(iter_num):
+    num=0
+
+    for it in range(iter_num):   
         c = Z + b
         yb = A(c, Phi)
         I = c + At(np.divide(y-yb, Phi_sum+mu ),Phi)
@@ -38,11 +40,19 @@ def admm_mmes(y, tau, r, sig, var, Phi, Phi_sum, mu = 0.01, rho = 0.001, denoise
         if it==0:
             follow=1
         out, loss_y_iter = mmes_denoiser(loss_y_min,follow,follow1, input0, temp_Z, truth, tau, r, sig, var, Phi_tensor, y_tensor, mmes_iter[it], mu, rho, shift_step=shift_step)   
+        if it > 0:
+           r0 = I - shift(np.transpose(np.squeeze(out), (1, 2, 0)), shift_step)
+           s = mu * (shift(np.transpose(np.squeeze(out), (1, 2, 0)), shift_step) - Z)
+           a = np.linalg.norm(r0)/np.linalg.norm(s)
+           if a > 10:
+               mu = 2 * mu
+           if a < 0.1:
+               mu = mu * 0.5
         Z = np.transpose(np.squeeze(out), (1, 2, 0))
         x_rec = Z
         Z = shift(Z, shift_step)
-        b = b-(I-Z)
-        mu = 0.998 * mu
+        b = b-(I-Z) 
+        #mu = 0.998 * mu
         psnr_x = psnr_block(X_ori, x_rec)
         end_time = time.time()
         print('ADMM-{}, Iteration {}, loss = {:.5f}, PSNR = {:.2f}dB, time = {}'.format(denoiser ,it+1, loss_y_iter, psnr_x, (end_time-begin_time)))
